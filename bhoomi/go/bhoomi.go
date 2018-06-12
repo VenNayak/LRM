@@ -94,6 +94,7 @@ func get_landRecord(stub shim.ChaincodeStubInterface, id string) (LandRecord, er
  * Best practice is to have any Ledger initialization in separate function -- see initLedger()
  */
 func (s *SmartContract) Init(stub shim.ChaincodeStubInterface) sc.Response {
+	s.initLedger(stub)
 	return shim.Success(nil)
 }
 
