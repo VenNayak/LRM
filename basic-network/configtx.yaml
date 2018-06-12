@@ -1,0 +1,92 @@
+---
+Profiles:
+
+    ThreeOrgsOrdererGenesis:
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *mojani
+                    - *kaveri
+                    - *finance
+    ThreeOrgsChannel:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *mojani
+                - *kaveri
+                - *finance  
+                              
+Organizations:
+
+    - &OrdererOrg
+        Name: OrdererOrg
+
+        ID: OrdererMSP
+
+        MSPDir: crypto-config/ordererOrganizations/cts.com/msp
+
+    - &mojani
+        Name: mojaniMSP
+
+        ID: mojaniMSP
+
+        MSPDir: crypto-config/peerOrganizations/mojani.cts.com/msp
+
+        AnchorPeers:
+            - Host: peer0.mojani.cts.com
+              Port: 7051
+
+    - &kaveri
+        Name: kaveriMSP
+
+        ID: kaveriMSP
+
+        MSPDir: crypto-config/peerOrganizations/kaveri.cts.com/msp
+
+        AnchorPeers:
+            - Host: peer0.kaveri.cts.com
+              Port: 7051
+
+    - &finance
+        Name: financeMSP
+
+        ID: financeMSP
+
+        MSPDir: crypto-config/peerOrganizations/finance.cts.com/msp
+
+        AnchorPeers:
+            - Host: peer0.finance.cts.com
+              Port: 7051
+
+Orderer: &OrdererDefaults
+
+    OrdererType: solo
+
+    Addresses:
+        - orderer.cts.com:7050
+
+    BatchTimeout: 2s
+
+    BatchSize:
+
+        MaxMessageCount: 10
+
+        AbsoluteMaxBytes: 99 MB
+
+        PreferredMaxBytes: 512 KB
+
+    Kafka:
+        Brokers:
+            - 127.0.0.1:9092
+
+    Organizations:
+
+Application: &ApplicationDefaults
+
+    Organizations:
+
