@@ -20,11 +20,11 @@
 
 package main
 
-/* Imports
- * 4 utility libraries for formatting, handling bytes, reading and writing JSON, and string manipulation
- * 2 specific Hyperledger Fabric specific libraries for Smart Contracts
- */
-// := is for declare & assign and = is for only assign
+// ============================================================================================================================
+//  Imports
+// 3 utility libraries for formatting, handling bytes, reading and writing JSON, and string manipulation
+// 2 specific Hyperledger Fabric specific libraries for Smart Contracts
+// ============================================================================================================================
 import (
 	"encoding/json"
 	"fmt"
@@ -38,7 +38,10 @@ import (
 type SmartContract struct {
 }
 
-// Define the landRecord structure, with  properties.  Structure tags are used by encoding/json library
+//
+// ============================================================================================================================
+//  Define the landRecord structure, with  properties.  Structure tags are used by encoding/json library
+// ============================================================================================================================
 type GeoData struct {
 	Latitude string `json:"latitude"`
         Longitude string `json:"longitude"`
@@ -65,13 +68,14 @@ type LandRecord struct {
 	WardNo string `json:"wardNo"`
 	AreaCode string `json:"areaCode"`
 	SiteNo  string `json:"siteNo"`
-        GeoData GeoData `json:"geoData"`
+    GeoData GeoData `json:"geoData"`
 	Owner Owner `json:"owner"`	
+	Allotee Owner `json:"owner"
 
 }
 
 // ============================================================================================================================
-// Get LandRecord - get a landrecord asset from ledger
+// Get LandRecord - get a land record asset from ledger
 // ============================================================================================================================
 func get_landRecord(stub shim.ChaincodeStubInterface, id string) (LandRecord, error) {
 	var landRecord LandRecord
@@ -89,19 +93,20 @@ func get_landRecord(stub shim.ChaincodeStubInterface, id string) (LandRecord, er
 }
 
 
-/*
- * The Init method is called when the Smart Contract "bhoomi" is instantiated by the blockchain network
- * Best practice is to have any Ledger initialization in separate function -- see initLedger()
- */
+// ============================================================================================================================
+//  The Init method is called when the Smart Contract "bhoomi" is instantiated by the blockchain network
+// Best practice is to have any Ledger initialization in separate function -- see initLedger()
+// ============================================================================================================================
 func (s *SmartContract) Init(stub shim.ChaincodeStubInterface) sc.Response {
 	s.initLedger(stub)
 	return shim.Success(nil)
 }
 
-/*
- * The Invoke method is called as a result of an application request to run the Smart Contract "bhoomi"
- * The calling application program has also specified the particular smart contract function to be called, with arguments
- */
+
+ // ============================================================================================================================
+//  The Invoke method is called as a result of an application request to run the Smart Contract "bhoomi"
+//  The calling application program has also specified the particular smart contract function to be called, with arguments
+// ============================================================================================================================
 func (s *SmartContract) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 
 	// Retrieve the requested Smart Contract function and arguments
@@ -115,11 +120,15 @@ func (s *SmartContract) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 		return s.createLandRecord(stub, args)
 	} else if function == "transferLandRecord" {
 		return s.transferLandRecord(stub, args)
+	} else if function == "allotNewLandRecord" {
+		return s.allotNewLandRecord(stub, args)
 	}
 
 	return shim.Error("Invalid Smart Contract function name.")
 }
-//query ledger for  landrecord by PID
+ // ============================================================================================================================
+//  Query Ledger for land record with PID
+// ============================================================================================================================
 func (s *SmartContract) queryLandRecord(stub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 1 {
@@ -131,7 +140,9 @@ func (s *SmartContract) queryLandRecord(stub shim.ChaincodeStubInterface, args [
 	return shim.Success(landAsBytes)
 }
 
-// Initialize ledger with one dummy record for unit testing
+ // ============================================================================================================================
+//  Initialize Ledger for land record with PID
+// ============================================================================================================================
 func (s *SmartContract) initLedger(stub shim.ChaincodeStubInterface) sc.Response {
 
         var owner Owner
@@ -164,7 +175,9 @@ func (s *SmartContract) initLedger(stub shim.ChaincodeStubInterface) sc.Response
 	return shim.Success(nil)
 }
 
-// Create a new land record on the ledger
+ // ============================================================================================================================
+//  Create a new Land Record on the ledger
+// ============================================================================================================================
 func (s *SmartContract) createLandRecord(stub shim.ChaincodeStubInterface, args []string) sc.Response {
         var err error
 
@@ -173,7 +186,7 @@ func (s *SmartContract) createLandRecord(stub shim.ChaincodeStubInterface, args 
 	}
 
     
-         id := args[0]     //args[0] = Pid = KEY
+         id := args[0]     //args[0] = Pid = KEY -- Declare and assign using :=
 
 	//check if land record with this Pid already exists
 	landRec, err := get_landRecord(stub, id)
@@ -206,7 +219,9 @@ func (s *SmartContract) createLandRecord(stub shim.ChaincodeStubInterface, args 
 	return shim.Success(nil)
 }
 
-//update geoDetails to the ledger
+ // ============================================================================================================================
+//  Update Geo Details on the ledger
+// ============================================================================================================================
 func (s *SmartContract) updateGeoDetails(stub shim.ChaincodeStubInterface, args []string) sc.Response {
         var err error
 	if len(args) != 7 {
@@ -236,7 +251,9 @@ func (s *SmartContract) updateGeoDetails(stub shim.ChaincodeStubInterface, args 
 	return shim.Success(nil)
 }
 
-// transfer ownership of the land on the ledger
+ // ============================================================================================================================
+//  Change ownership of the land record on the ledger
+// ============================================================================================================================
 func (s *SmartContract) transferLandRecord(stub shim.ChaincodeStubInterface, args []string) sc.Response {
         var err error
 	if len(args) != 7 {
@@ -265,7 +282,40 @@ func (s *SmartContract) transferLandRecord(stub shim.ChaincodeStubInterface, arg
 	return shim.Success(nil)
 }
 
-// The main function is only relevant in unit test mode. Only included here for completeness.
+ // ============================================================================================================================
+//  Allot new land record to a owner
+// ============================================================================================================================
+func (s *SmartContract) allotNewLandRecord(stub shim.ChaincodeStubInterface, args []string) sc.Response {
+        var err error
+	if len(args) != 7 {
+		return shim.Error("Incorrect number of arguments. Expecting 7")
+	}
+
+	id := args[0] //args[0] = Pid = KEY
+
+	//check if land record with this Pid already exists
+	landRecord, err := get_landRecord(stub, id)
+	if err != nil {         //halt if error
+		return shim.Error("Failed to find the landRecord - " + id)
+	}
+        
+        //assign the values for the new owner object
+      	landRecord.Allotee.OwnerName = args[1]
+        landRecord.Allotee.Gender = args[2]
+        landRecord.Allotee.AadharNo = args[3]
+        landRecord.Allotee.MobileNo = args[4]
+        landRecord.Allotee.EmailID = args[5]
+        landRecord.Allotee.Address = args[6]
+
+	landAsBytes, _ := json.Marshal(landRecord) // convert to bytes aka Json.stringify()  -- _ is to skip reading the first return val
+	stub.PutState(id, landAsBytes) //update ledger
+
+	return shim.Success(nil)
+}
+
+// ============================================================================================================================
+//  Main function for unit testing
+// ============================================================================================================================
 func main() {
 
 	// Create a new Smart Contract
