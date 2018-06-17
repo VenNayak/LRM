@@ -70,7 +70,7 @@ type LandRecord struct {
 	SiteNo  string `json:"siteNo"`
     GeoData GeoData `json:"geoData"`
 	Owner Owner `json:"owner"`	
-	Allotee Owner `json:"owner"
+	Allotee Owner `json:"owner"`
 
 }
 
